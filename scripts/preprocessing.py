@@ -1,5 +1,7 @@
 from sklearn.externals import joblib
 import sys
+from utils import *
+
 def read_dictionary(fn,omit_first=False,key_func=str,val_func=int,delim='|'):
     with open(fn) as dicts:
         d = {}
@@ -19,6 +21,8 @@ data_dir = sys.argv[1]#'/home/mayk/crack_attention/data/raw/stanfordSentimentTre
 phrase_dictionary = read_dictionary(data_dir + '/dictionary.txt')
 senti_dictionary = read_dictionary(data_dir + '/sentiment_labels.txt',omit_first=True,key_func=int,val_func=float)
 split_dictionary = read_dictionary(data_dir + '/datasetSplit.txt',omit_first=True,key_func=int,val_func=int,delim=',')
+embd = load_word2vec('data/resources/glove.840B.300d.txt')
+
 with open(data_dir + '/SOStr.txt') as sents:
     d = {}
     cnt = 0
@@ -53,8 +57,9 @@ with open(data_dir + '/SOStr.txt') as sents:
             fine_label = 4
         data[data_split-1][0].append(sent)
         data[data_split-1][1].append(fine_label)
+    embd =  create_id2vec(word2id,embd[0],embd[1])
 train,test,dev = data
 bin_train,bin_test,bin_dev = bin_data
 
-joblib.dump({'data':[train,dev,test],'dicts':{'word2id':word2id,'id2word':id2word}},'data/preprocessed/fine.pkl')
-joblib.dump({'data':[bin_train,bin_dev,bin_test],'dicts':{'word2id':word2id,'id2word':id2word}},'data/preprocessed/binary.pkl')
+joblib.dump({'data':[train,dev,test],'dicts':{'word2id':word2id,'id2word':id2word},'embd':embd},'data/preprocessed/fine.pkl')
+joblib.dump({'data':[bin_train,bin_dev,bin_test],'dicts':{'word2id':word2id,'id2word':id2word},'embd':embd},'data/preprocessed/binary.pkl')
